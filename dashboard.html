@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Telegram Multi-Account Promoter</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Inter',Arial,sans-serif;-webkit-tap-highlight-color:transparent}
+body{background:linear-gradient(135deg,#0f1923,#14212e 40%,#1a2a3d);background-attachment:fixed;color:#fff;padding:14px 10px 40px;min-height:100vh}
+.container{max-width:640px;margin:0 auto}
+.header{background:linear-gradient(135deg,#2b5cf0,#7c3aed 60%,#db2777 120%);border-radius:20px;padding:18px 16px;margin-bottom:12px;box-shadow:0 10px 30px rgba(59,92,240,.35);position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;top:-40px;right:-40px;width:160px;height:160px;border-radius:50%;background:rgba(255,255,255,.12)}
+.header h1{font-size:19px;font-weight:800;position:relative;z-index:1}
+.header p{font-size:11px;color:rgba(255,255,255,.85);margin-top:4px;position:relative;z-index:1}
+.hbtns{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:6px}
+.hbtn{border:none;border-radius:10px;padding:7px 11px;font-size:10px;font-weight:700;cursor:pointer;color:#fff;background:rgba(255,255,255,.18)}
+.hbtn:active{transform:scale(.95)}
+.hbtn-admin{background:linear-gradient(135deg,#f59e0b,#ea8a0a)}
+.stat-row{display:flex;gap:10px;margin-bottom:14px}
+.stat{flex:1;border-radius:16px;padding:13px 6px;text-align:center;background:rgba(35,46,60,.7);border:1px solid rgba(94,181,247,.15)}
+.stat b{font-size:22px;font-weight:800;display:block;margin-bottom:2px}
+.stat span{font-size:9px;color:#8fa4b3;text-transform:uppercase;letter-spacing:1px;font-weight:600}
+.stat-sent b{color:#4ade80}.stat-run b{color:#fbbf24}.stat-acc b{color:#60a5fa}
+.card{background:rgba(35,46,60,.75);border:1px solid rgba(94,181,247,.12);border-radius:18px;padding:16px 14px;margin-bottom:14px;box-shadow:0 4px 20px rgba(0,0,0,.25)}
+h2{font-size:13px;font-weight:700;color:#c9d8e5;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+label{display:block;font-size:10px;color:#8fa4b3;margin:9px 0 5px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+input,textarea{width:100%;padding:11px 13px;border-radius:12px;border:1.5px solid rgba(94,181,247,.2);background:rgba(15,25,35,.8);color:#fff;font-size:16px;outline:none;transition:all .25s}
+input:focus,textarea:focus{border-color:#5eb5f7;box-shadow:0 0 0 3px rgba(94,181,247,.15)}
+input::placeholder,textarea::placeholder{color:#54697d}
+textarea{height:64px;resize:vertical;line-height:1.5}
+.btn{padding:11px 16px;border:none;border-radius:12px;font-size:13px;font-weight:700;cursor:pointer;color:#fff;margin-top:12px;box-shadow:0 4px 14px rgba(0,0,0,.3);transition:all .2s}
+.btn:active{transform:scale(.96)}
+.btn-green{background:linear-gradient(135deg,#34d058,#22863a)}
+.btn-red{background:linear-gradient(135deg,#f87171,#dc2626)}
+.btn-blue{background:linear-gradient(135deg,#3b82f6,#2b5cf0)}
+.btn-orange{background:linear-gradient(135deg,#fbbf24,#ea8a0a);color:#1a1200}
+.btn-danger-outline{background:transparent;border:1.5px solid rgba(248,113,113,.5);box-shadow:none}
+.btn-sm{padding:8px 14px;font-size:12px;margin:0 6px 6px 0;border-radius:10px}
+.btn-big{width:100%;padding:15px;font-size:16px;margin-top:8px;letter-spacing:1px}
+.tabs{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 10px;margin-bottom:6px;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{display:flex;align-items:center;gap:7px;border:1.5px solid rgba(94,181,247,.2);background:rgba(28,39,51,.85);color:#aab8c6;border-radius:24px;padding:9px 15px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .25s}
+.tab-active{color:#fff;transform:translateY(-1px)}
+.tab-0.tab-active{background:linear-gradient(135deg,#2b5cf0,#7c3aed);border-color:transparent}
+.tab-1.tab-active{background:linear-gradient(135deg,#0ea5e9,#2dd4bf);border-color:transparent}
+.tab-2.tab-active{background:linear-gradient(135deg,#f43f5e,#fb923c);border-color:transparent}
+.tab-3.tab-active{background:linear-gradient(135deg,#8b5cf6,#ec4899);border-color:transparent}
+.tab-4.tab-active{background:linear-gradient(135deg,#22c55e,#84cc16);border-color:transparent}
+.tab-5.tab-active{background:linear-gradient(135deg,#f59e0b,#eab308);border-color:transparent}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block;flex-shrink:0}
+.dot-green{background:#4ade80;box-shadow:0 0 8px rgba(74,222,128,.8);animation:pulse 1.6s infinite}
+.dot-gray{background:#64748b}.dot-yellow{background:#fbbf24;box-shadow:0 0 8px rgba(251,191,36,.7)}.dot-red{background:#f87171;box-shadow:0 0 8px rgba(248,113,113,.7)}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(74,222,128,.5)}70%{box-shadow:0 0 0 7px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+.acc-info{font-size:14px;line-height:1.6}
+.acc-info b{color:#5eb5f7;font-size:16px}
+.acc-status{font-size:10px;padding:4px 12px;border-radius:20px;display:inline-block;margin-top:6px;font-weight:700}
+.st-idle{background:rgba(100,116,139,.25);color:#94a3b8}
+.st-running{background:rgba(34,197,94,.15);color:#4ade80;border:1px solid rgba(74,222,128,.4)}
+.st-stopping{background:rgba(251,191,36,.15);color:#fbbf24;border:1px solid rgba(251,191,36,.4)}
+.st-waiting{background:rgba(251,146,60,.15);color:#fb923c;border:1px solid rgba(251,146,60,.4)}
+.st-failed{background:rgba(239,68,68,.15);color:#f87171;border:1px solid rgba(248,113,113,.4)}
+.sent-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(94,181,247,.12);border:1px solid rgba(94,181,247,.3);color:#5eb5f7;font-size:11px;font-weight:700;padding:4px 10px;border-radius:20px;margin-top:6px;margin-left:6px}
+.live-toggle,.dm-toggle{border:none;padding:5px 12px;border-radius:15px;font-weight:700;font-size:12px;color:#fff;cursor:pointer;margin-top:6px;margin-left:6px}
+.live-toggle.on{background:linear-gradient(135deg,#e91e63,#c2185b)}
+.live-toggle.off{background:#555}
+.dm-toggle.on{background:linear-gradient(135deg,#4caf50,#2e7d32)}
+.dm-toggle.off{background:#555}
+.queue-badge{background:linear-gradient(135deg,#ff9800,#f57c00);color:#fff;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:700;display:inline-flex;margin-top:6px;margin-left:6px}
+.run-hint{font-size:11px;color:#94a3b8;margin-top:8px;line-height:1.5}
+.otp-box{margin-top:14px;padding:14px;background:linear-gradient(135deg,rgba(251,146,60,.12),rgba(251,191,36,.08));border:1.5px solid rgba(251,146,60,.4);border-radius:14px;animation:glow 2s infinite alternate}
+@keyframes glow{from{box-shadow:0 0 8px rgba(251,146,60,.15)}to{box-shadow:0 0 20px rgba(251,146,60,.35)}}
+.otp-box label{color:#fdba74;margin-top:0}
+.otp-row{display:flex;gap:8px}
+.otp-row input{flex:1}
+.otp-row .btn{margin-top:0;padding:10px 14px;font-size:12px;white-space:nowrap}
+#logs{background:#0a1118;border:1px solid rgba(94,181,247,.15);border-radius:14px;padding:14px;height:270px;overflow-y:auto;font-family:'SF Mono','Consolas','Menlo',monospace;font-size:10.5px;line-height:1.8;color:#9ecfef}
+.log-line{padding:1px 0;word-break:break-word}
+.log-time{color:#54697d}
+.tag{font-weight:700}
+.tag-OK,.tag-LIVE{color:#4ade80}.tag-DM,.tag-SENT,.tag-OTP{color:#7dd3fc}.tag-WARN{color:#fbbf24}.tag-FAIL{color:#f87171}.tag-WAIT,.tag-INFO,.tag-BYE{color:#94a3b8}.tag-SKIP{color:#c084fc}.tag-END,.tag-START,.tag-GO{color:#fb923c}.tag-USERS,.tag-GROUP,.tag-DB{color:#2dd4bf}
+.hint{font-size:10px;color:#64748b;margin-top:5px;line-height:1.5}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.divider{height:1px;background:linear-gradient(90deg,transparent,rgba(94,181,247,.25),transparent);margin:14px 0;border:none}
+.empty-msg{color:#64748b;font-size:12px;text-align:center;padding:14px;font-style:italic}
+.banner{background:rgba(217,119,6,.15);border:1px solid rgba(217,119,6,.4);color:#fbbf24;border-radius:12px;padding:10px 14px;font-size:12px;margin-bottom:14px;display:none;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap}
+.footer-note{text-align:center;font-size:10px;color:#475569;margin-top:24px;letter-spacing:1px}
+.credit{margin-top:16px;text-align:center;padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(43,92,240,.15),rgba(219,39,119,.15));border:1px solid rgba(94,181,247,.2)}
+.credit span{font-size:11px;color:#8fa4b3;letter-spacing:2px;text-transform:uppercase;font-weight:600}
+.credit b{display:block;margin-top:4px;font-size:15px;font-weight:800;background:linear-gradient(135deg,#5eb5f7,#db2777);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="hbtns">
+      <button class="hbtn hbtn-admin" id="adminBtn" style="display:none" onclick="location.href='/admin'">Admin</button>
+      <button class="hbtn" onclick="location.href='/logout'">Logout</button>
+    </div>
+    <h1>Telegram Promoter</h1>
+    <p>Multi-Account Live Monitor &amp; DM Dashboard</p>
+  </div>
+
+  <div id="viewBanner" class="banner">
+    <span id="viewText"></span>
+    <button class="hbtn" onclick="backToAdmin()">Back to Admin View</button>
+  </div>
+
+  <div class="stat-row">
+    <div class="stat stat-sent"><b id="totalSent">0</b><span>Total DMs</span></div>
+    <div class="stat stat-run"><b id="runCount">0</b><span>Running</span></div>
+    <div class="stat stat-acc"><b id="accCount">0</b><span>Accounts</span></div>
+  </div>
+
+  <div id="tabs" class="tabs"></div>
+  <div id="detail"></div>
+
+  <div class="card">
+    <h2>Add New Telegram Account</h2>
+    <label>Account Name</label>
+    <input type="text" id="accLabel" placeholder="Account A">
+    <label>Mobile Number</label>
+    <input type="text" id="accPhone" placeholder="+919876543210">
+    <div class="hint">OTP will arrive on this number's Telegram. Format: +91XXXXXXXXXX</div>
+    <div class="row">
+      <div><label>API ID</label><input type="text" id="accApiId" placeholder="123456"></div>
+      <div><label>API HASH</label><input type="text" id="accApiHash" placeholder="abcd1234..."></div>
+    </div>
+    <button class="btn btn-blue" onclick="addAccount()">+ ADD ACCOUNT</button>
+  </div>
+
+  <div class="footer-note">LIVE MONITOR &amp; DM AUTOMATION</div>
+
+  <div class="credit">
+    <span>Design By</span>
+    <b>Ash_King</b>
+  </div>
+</div>
+<script>
+let currentTab = null;
+let accountsData = [];
+const esc = s => (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+function renderLogLine(line) {
+  let safe = esc(line);
+  safe = safe.replace(/^(\[\d{2}:\d{2}:\d{2}\])/, '<span class="log-time">$1</span>');
+  safe = safe.replace(/\[(OK|LIVE|DM|SENT|WARN|FAIL|WAIT|SKIP|END|START|USERS|GO|INFO|BYE|DB)\]/g, '<span class="tag tag-$1">[$1]</span>');
+  return '<div class="log-line">' + safe + '</div>';
+}
+
+async function loadAccounts() {
+  try {
+    const r = await fetch('/api/accounts');
+    const d = await r.json();
+    accountsData = d.accounts;
+    document.getElementById('totalSent').textContent = d.total_sent;
+    document.getElementById('accCount').textContent = d.accounts.length;
+    document.getElementById('runCount').textContent = d.accounts.filter(a => a.state === 'running').length;
+
+    let th = '';
+    d.accounts.forEach((a, i) => {
+      const cls = a.state === 'running' ? 'dot-green' : a.state === 'waiting' ? 'dot-yellow' : a.state === 'failed' ? 'dot-red' : 'dot-gray';
+      th += '<button class="tab tab-' + (i % 6) + (a.phone === currentTab ? ' tab-active' : '') + '" onclick="switchTab(\'' + a.phone + '\')"><span class="dot ' + cls + '"></span>' + esc(a.label) + '</button>';
+    });
+    document.getElementById('tabs').innerHTML = th || '<span class="empty-msg">No accounts yet - add one below</span>';
+
+    if (currentTab && !d.accounts.find(a => a.phone === currentTab)) {
+      currentTab = d.accounts.length ? d.accounts[0].phone : null;
+      if (currentTab) switchTab(currentTab);
+      else document.getElementById('detail').innerHTML = '';
+    }
+    if (!currentTab && d.accounts.length) switchTab(d.accounts[0].phone);
+    renderHead();
+    if (currentTab) loadLogs();
+  } catch(e) {}
+}
+
+function switchTab(phone) {
+  currentTab = phone;
+  document.getElementById('detail').innerHTML =
+    '<div class="card" id="headCard"></div>' +
+    '<div class="card"><h2>Bot Config</h2>' +
+    '<label>My Channel Link</label><input type="text" id="f_channel" placeholder="https://t.me/...">' +
+    '<label>Target Group Links - OPTIONAL (empty = auto-detect all channels)</label><textarea id="f_targets" placeholder="Leave EMPTY for auto-detect, or paste https://t.me/+xxxxx"></textarea>' +
+    '<label>DM Message</label><textarea id="f_message">Join my channel!\n{CHANNEL_LINK}\nLatest content and premium updates here!</textarea>' +
+    '<hr class="divider">' +
+    '<div class="row"><div><label>Max Users (0 = all)</label><input type="number" id="f_max" value="0"></div>' +
+    '<div><label>Check Interval (sec, 20 = fast)</label><input type="number" id="f_int" value="20"></div></div>' +
+    '<div class="row"><div><label>Delay Min (sec)</label><input type="number" id="f_dmin" value="60"></div>' +
+    '<div><label>Delay Max (sec)</label><input type="number" id="f_dmax" value="120"></div></div>' +
+    '<button class="btn btn-blue" onclick="saveConfig()">SAVE CONFIG</button>' +
+    '<div class="hint">Targets empty = bot auto-detects ALL joined channels and monitors them for live streams.</div></div>' +
+    '<div class="card"><h2>Logs</h2><div id="logs"></div></div>';
+  loadForm();
+  renderHead();
+  loadLogs();
+}
+
+async function loadForm() {
+  try {
+    const r = await fetch('/api/account/config?phone=' + encodeURIComponent(currentTab));
+    const c = await r.json();
+    if (!c || !c.targets) return;
+    document.getElementById('f_channel').value = c.channel_link || '';
+    document.getElementById('f_targets').value = (c.targets || []).join('\n');
+    if (c.message) document.getElementById('f_message').value = c.message;
+    document.getElementById('f_max').value = (c.max_users !== undefined) ? c.max_users : 0;
+    document.getElementById('f_int').value = c.check_interval || 20;
+    document.getElementById('f_dmin').value = c.delay_min || 60;
+    document.getElementById('f_dmax').value = c.delay_max || 120;
+  } catch(e) {}
+}
+
+function renderHead() {
+  const el = document.getElementById('headCard');
+  if (!el || !currentTab) return;
+  const a = accountsData.find(x => x.phone === currentTab);
+  if (!a) return;
+  const oldOtp = document.getElementById('otpInput') ? document.getElementById('otpInput').value : '';
+  const oldPwd = document.getElementById('pwdInput') ? document.getElementById('pwdInput').value : '';
+
+  let h = '<div class="acc-info"><b>' + esc(a.label) + '</b> <span style="color:#64748b;font-size:12px;">(' + a.phone + ')</span>';
+  if (a.username) h += ' <span style="color:#7dd3fc;font-weight:600;">@' + a.username + '</span>';
+  h += '<br><span class="acc-status st-' + a.state + '">' + esc(a.status) + '</span>';
+  h += ' <span class="sent-badge">DMs: ' + a.sent_count + '</span>';
+  if (a.queue_count > 0) { h += ' <span class="queue-badge">Queue: ' + a.queue_count + '/100</span>'; }
+  h += '</div>';
+  if (a.state === 'running') {
+    h += '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap;">';
+    h += '<button class="live-toggle ' + (a.live_on ? 'on' : 'off') + '" onclick="toggleLive(\'' + a.phone + '\')">' + (a.live_on ? 'LIVE MONITOR: ON' : 'LIVE MONITOR: OFF') + '</button>';
+    h += '<button class="dm-toggle ' + (a.dm_on ? 'on' : 'off') + '" onclick="toggleDM(\'' + a.phone + '\')">' + (a.dm_on ? 'DM: ON' : 'DM: OFF') + '</button>';
+    h += '</div>';
+  }
+
+  h += '<div style="margin-top:10px;">';
+  if (a.state === 'running') {
+    h += '<button class="btn btn-red btn-big" onclick="stopAcc(\'' + a.phone + '\')">STOP BOT</button>';
+    h += '<button class="btn btn-danger-outline btn-sm" style="width:100%;" onclick="removeAcc(\'' + a.phone + '\')">DELETE ACCOUNT</button>';
+  } else if (a.state === 'stopping') {
+    h += '<div class="run-hint">Stopping... please wait.</div>';
+  } else if (a.state === 'waiting') {
+    h += '<div class="run-hint">Login pending - complete the OTP / 2FA box below first. START button will appear after login.</div>';
+  } else {
+    h += '<button class="btn btn-green btn-big" onclick="startAcc(\'' + a.phone + '\')">START BOT</button>';
+    h += '<button class="btn btn-danger-outline btn-sm" style="width:100%;" onclick="removeAcc(\'' + a.phone + '\')">DELETE ACCOUNT</button>';
+  }
+  h += '</div>';
+
+  if (a.state === 'waiting' && a.status === 'awaiting_otp') {
+    h += '<div class="otp-box"><label>Enter OTP (sent on Telegram):</label><div class="otp-row"><input type="text" id="otpInput" placeholder="5 digit code" inputmode="numeric"><button class="btn btn-orange" onclick="verifyOtp(\'' + a.phone + '\')">VERIFY</button></div></div>';
+  }
+  if (a.state === 'waiting' && a.status === 'awaiting_2fa') {
+    h += '<div class="otp-box"><label>Enter 2FA password (Telegram cloud password):</label><div class="otp-row"><input type="password" id="pwdInput" placeholder="2FA password"><button class="btn btn-orange" onclick="verify2fa(\'' + a.phone + '\')">VERIFY</button></div></div>';
+  }
+  el.innerHTML = h;
+  const oi = document.getElementById('otpInput');
+  const pi = document.getElementById('pwdInput');
+  if (oi) oi.value = oldOtp;
+  if (pi) pi.value = oldPwd;
+}
+
+async function loadLogs() {
+  try {
+    const r = await fetch('/api/logs?phone=' + encodeURIComponent(currentTab));
+    const d = await r.json();
+    const el = document.getElementById('logs');
+    if (el) {
+      el.innerHTML = d.logs.length ? d.logs.map(renderLogLine).join('') : '<div class="log-line" style="color:#54697d;">Logs will appear here...</div>';
+      el.scrollTop = el.scrollHeight;
+    }
+  } catch(e) {}
+}
+
+function backToAdmin() {
+  location.href = '/back-to-admin';
+}
+
+async function toggleLive(phone) {
+  const r = await fetch('/api/account/toggle-live', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+
+async function toggleDM(phone) {
+  const r = await fetch('/api/account/toggle-dm', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+
+async function loadViewBanner() {
+  try {
+    const r = await fetch('/whoami');
+    const j = await r.json();
+    const vb = document.getElementById('viewBanner');
+    const ab = document.getElementById('adminBtn');
+    if (j.view_as) {
+      vb.style.display = 'flex';
+      document.getElementById('viewText').textContent = 'Viewing dashboard of: ' + j.view_as;
+    } else {
+      vb.style.display = 'none';
+    }
+    if (j.role === 'admin') ab.style.display = 'block';
+  } catch(e) {}
+}
+
+async function addAccount() {
+  const body = {
+    label: document.getElementById('accLabel').value.trim(),
+    phone: document.getElementById('accPhone').value.trim(),
+    api_id: document.getElementById('accApiId').value.trim(),
+    api_hash: document.getElementById('accApiHash').value.trim()
+  };
+  if (!body.label || !body.phone.startsWith('+') || !body.api_id || !body.api_hash) {
+    alert('All fields are required! Phone must start with +91.');
+    return;
+  }
+  const r = await fetch('/api/account/add', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await r.json();
+  alert(d.msg);
+  if (d.msg.indexOf('added') !== -1) {
+    document.getElementById('accLabel').value = '';
+    document.getElementById('accPhone').value = '';
+    document.getElementById('accApiId').value = '';
+    document.getElementById('accApiHash').value = '';
+  }
+  await loadAccounts();
+}
+
+async function startAcc(phone) {
+  const r = await fetch('/api/account/start', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+async function stopAcc(phone) {
+  await fetch('/api/account/stop', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone})});
+  loadAccounts();
+}
+async function removeAcc(phone) {
+  if (!confirm('Delete ' + phone + '? (Stop it first if running)')) return;
+  const r = await fetch('/api/account/remove', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+async function verifyOtp(phone) {
+  const code = document.getElementById('otpInput').value.trim();
+  if (!code) { alert('Enter OTP first!'); return; }
+  const r = await fetch('/api/account/verify-otp', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone, code: code})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+async function verify2fa(phone) {
+  const password = document.getElementById('pwdInput').value;
+  if (!password) { alert('Enter 2FA password!'); return; }
+  const r = await fetch('/api/account/verify-2fa', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({phone: phone, password: password})});
+  const d = await r.json();
+  alert(d.msg);
+  loadAccounts();
+}
+async function saveConfig() {
+  if (!currentTab) { alert('Select an account first!'); return; }
+  const channel = document.getElementById('f_channel').value.trim();
+  const body = {
+    phone: currentTab,
+    channel_link: channel,
+    targets: document.getElementById('f_targets').value.split('\n').map(s => s.trim()).filter(s => s),
+    message: document.getElementById('f_message').value.replace('{CHANNEL_LINK}', channel),
+    max_users: parseInt(document.getElementById('f_max').value) || 0,
+    check_interval: parseInt(document.getElementById('f_int').value) || 20,
+    delay_min: parseInt(document.getElementById('f_dmin').value) || 60,
+    delay_max: parseInt(document.getElementById('f_dmax').value) || 120
+  };
+  const r = await fetch('/api/account/config', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body)});
+  const d = await r.json();
+  alert(d.msg);
+}
+setInterval(loadAccounts, 3000);
+loadViewBanner();
+loadAccounts();
+</script>
+</body>
+</html>

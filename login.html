@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login — Telegram Promoter</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',Arial,sans-serif; }
+  body { background:linear-gradient(135deg,#0f1923,#1a2a3d); min-height:100vh; min-height:100dvh; display:flex; align-items:center; justify-content:center; color:#fff; padding:20px; }
+  .card { background:rgba(35,46,60,.85); border:1px solid rgba(94,181,247,.2); border-radius:22px; padding:36px 26px; width:100%; max-width:380px; box-shadow:0 20px 50px rgba(0,0,0,.5); backdrop-filter:blur(10px); }
+  .icon { font-size:44px; text-align:center; display:block; margin-bottom:10px; }
+  h1 { font-size:18px; text-align:center; font-weight:800; margin-bottom:4px; }
+  p.sub { font-size:11px; color:#8fa4b3; text-align:center; margin-bottom:22px; }
+  input { width:100%; padding:14px 15px; border-radius:12px; margin-bottom:10px; border:1.5px solid rgba(94,181,247,.25); background:rgba(15,25,35,.9); color:#fff; font-size:16px; outline:none; }
+  input:focus { border-color:#5eb5f7; box-shadow:0 0 0 3px rgba(94,181,247,.15); }
+  button { width:100%; padding:14px; margin-top:6px; border:none; border-radius:12px; background:linear-gradient(135deg,#2b5cf0,#7c3aed); color:#fff; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 6px 18px rgba(59,92,240,.4); transition:transform .15s; }
+  button:active { transform:scale(.97); }
+  .forgot-link { display:block; text-align:center; margin-top:14px; font-size:12px; color:#5eb5f7; cursor:pointer; text-decoration:underline; }
+  .err { color:#f87171; font-size:12px; text-align:center; margin-top:12px; min-height:16px; }
+  .ok { color:#34d399; font-size:12px; text-align:center; margin-top:12px; min-height:16px; }
+  .lock { text-align:center; font-size:10px; color:#475569; margin-top:20px; letter-spacing:1px; }
+  .qbox { background:rgba(94,181,247,.1); border:1.5px solid rgba(94,181,247,.35); border-radius:12px; padding:12px; margin-bottom:10px; font-size:13px; color:#7dd3fc; text-align:center; }
+  .back { text-align:center; margin-top:14px; font-size:11px; color:#5eb5f7; cursor:pointer; text-decoration:underline; }
+</style>
+</head>
+<body>
+  <div class="card" id="loginCard">
+    <span class="icon">🔐</span>
+    <h1>Login</h1>
+    <p class="sub">Telegram Promoter Dashboard</p>
+    <input type="text" id="uname" placeholder="Username" autocomplete="off">
+    <input type="password" id="pwd" placeholder="Password" autocomplete="off">
+    <button onclick="doLogin()">LOGIN</button>
+    <div class="err" id="err"></div>
+    <a class="forgot-link" onclick="showForgot()">Forgot Password? 🔑</a>
+    <div class="lock">⚡ RESTRICTED ACCESS ⚡</div>
+  </div>
+
+  <div class="card" id="forgotCard" style="display:none">
+    <span class="icon">🔓</span>
+    <h1>Password Reset</h1>
+    <p class="sub">Answer your security question</p>
+    <div id="step1">
+      <input type="text" id="f_uname" placeholder="Your Username" autocomplete="off">
+      <button onclick="fetchQuestion()">GET SECURITY QUESTION</button>
+      <div class="err" id="f_err1"></div>
+    </div>
+    <div id="step2" style="display:none">
+      <div class="qbox" id="qBox"></div>
+      <input type="text" id="f_answer" placeholder="Your answer" autocomplete="off">
+      <input type="password" id="f_newpwd" placeholder="New Password (min 6)" autocomplete="off">
+      <button onclick="doReset()">RESET PASSWORD</button>
+      <div class="err" id="f_err2"></div>
+    </div>
+    <div class="ok" id="f_ok"></div>
+    <div class="back" onclick="showLogin()">← Back to Login</div>
+  </div>
+<script>
+function showForgot() {
+  document.getElementById('loginCard').style.display = 'none';
+  document.getElementById('forgotCard').style.display = 'block';
+  document.getElementById('step1').style.display = 'block';
+  document.getElementById('step2').style.display = 'none';
+  document.getElementById('f_err1').textContent = '';
+  document.getElementById('f_err2').textContent = '';
+  document.getElementById('f_ok').textContent = '';
+}
+function showLogin() {
+  document.getElementById('forgotCard').style.display = 'none';
+  document.getElementById('loginCard').style.display = 'block';
+}
+async function fetchQuestion() {
+  const uname = document.getElementById('f_uname').value.trim();
+  if (!uname) { document.getElementById('f_err1').textContent = 'Enter your username first!'; return; }
+  const r = await fetch('/api/forgot/question?username=' + encodeURIComponent(uname));
+  const j = await r.json();
+  if (!r.ok) { document.getElementById('f_err1').textContent = '❌ ' + (j.msg || 'Error!'); return; }
+  document.getElementById('qBox').textContent = '❓ ' + j.question;
+  document.getElementById('step1').style.display = 'none';
+  document.getElementById('step2').style.display = 'block';
+}
+async function doReset() {
+  const ans = document.getElementById('f_answer').value;
+  const newpwd = document.getElementById('f_newpwd').value;
+  document.getElementById('f_err2').textContent = '';
+  document.getElementById('f_ok').textContent = '';
+  if (!ans) { document.getElementById('f_err2').textContent = 'Enter the answer first!'; return; }
+  if (newpwd.length < 6) { document.getElementById('f_err2').textContent = 'New password must be at least 6 characters!'; return; }
+  const r = await fetch('/api/forgot/reset', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({username: document.getElementById('f_uname').value.trim(), answer: ans, new_password: newpwd})
+  });
+  const j = await r.json();
+  if (r.ok) { document.getElementById('f_ok').textContent = '✅ ' + j.msg; setTimeout(showLogin, 2500); }
+  else { document.getElementById('f_err2').textContent = '❌ ' + (j.msg || 'Reset failed!'); }
+}
+async function doLogin() {
+  const uname = document.getElementById('uname').value.trim();
+  const pwd = document.getElementById('pwd').value;
+  if (!uname || !pwd) { document.getElementById('err').textContent = 'Enter both username and password!'; return; }
+  const r = await fetch('/login', {
+    method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({username: uname, password: pwd})
+  });
+  const j = await r.json();
+  if (r.ok) { location.href = (j.role === 'admin') ? '/admin' : '/'; }
+  else { document.getElementById('err').textContent = '❌ ' + (j.msg || 'Login failed!'); }
+}
+document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('pwd').addEventListener('keyup', e => {
+  document.getElementById('err').textContent = '';
+});
+</script>
+</body>
+</html>

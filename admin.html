@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Panel — Telegram Promoter</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; font-family:'Inter',Arial,sans-serif; }
+  body { background:linear-gradient(135deg,#0f1923,#1a2a3d); background-attachment:fixed; min-height:100vh; color:#e8eef4; padding:14px 12px 40px; }
+  .wrap { max-width:920px; margin:0 auto; }
+  header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px; }
+  h1 { font-size:20px; font-weight:800; }
+  h1 span { background:linear-gradient(135deg,#5eb5f7,#a78bfa); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+  .btns button { border:none; border-radius:10px; padding:10px 14px; font-size:12px; font-weight:700; cursor:pointer; color:#fff; margin-left:6px; }
+  .b-dash { background:linear-gradient(135deg,#0ea5e9,#2563eb); }
+  .b-out { background:linear-gradient(135deg,#dc2626,#991b1b); }
+  .card { background:rgba(35,46,60,.85); border:1px solid rgba(94,181,247,.18); border-radius:16px; padding:18px 16px; margin-bottom:16px; box-shadow:0 10px 30px rgba(0,0,0,.35); }
+  .card h2 { font-size:14px; margin-bottom:12px; color:#5eb5f7; }
+  label { font-size:11px; color:#8fa4b3; display:block; margin-bottom:4px; }
+  input, select { width:100%; padding:11px 12px; border-radius:10px; border:1.5px solid rgba(94,181,247,.25); background:rgba(15,25,35,.9); color:#fff; font-size:14px; outline:none; margin-bottom:10px; }
+  input:focus, select:focus { border-color:#5eb5f7; }
+  select { appearance:none; }
+  option { background:#14212e; }
+  .row { display:flex; gap:10px; flex-wrap:wrap; }
+  .row > div { flex:1; min-width:140px; }
+  .b-add { background:linear-gradient(135deg,#059669,#10b981); width:100%; padding:12px; margin-left:0; border:none; border-radius:10px; color:#fff; font-size:13px; font-weight:700; cursor:pointer; }
+  .msg { font-size:12px; margin-top:8px; min-height:16px; color:#34d399; word-break:break-word; }
+  .msg.bad { color:#f87171; }
+  table { width:100%; border-collapse:collapse; font-size:12px; }
+  th { text-align:left; color:#8fa4b3; font-size:10px; text-transform:uppercase; letter-spacing:1px; padding:8px 6px; border-bottom:1px solid rgba(94,181,247,.15); }
+  td { padding:10px 6px; border-bottom:1px solid rgba(255,255,255,.05); vertical-align:middle; }
+  .badge { padding:3px 9px; border-radius:20px; font-size:10px; font-weight:700; white-space:nowrap; }
+  .bg-admin { background:rgba(167,139,250,.2); color:#a78bfa; }
+  .bg-user { background:rgba(94,181,247,.15); color:#5eb5f7; }
+  .bg-on { background:rgba(16,185,129,.15); color:#34d399; }
+  .bg-off { background:rgba(239,68,68,.15); color:#f87171; }
+  .bg-warn { background:rgba(217,119,6,.2); color:#fbbf24; }
+  .mini { padding:6px 9px; font-size:10px; border-radius:8px; margin:2px; border:none; font-weight:700; cursor:pointer; color:#fff; }
+  .b-view { background:linear-gradient(135deg,#0ea5e9,#2563eb); }
+  .b-tog { background:linear-gradient(135deg,#d97706,#b45309); }
+  .b-reset { background:linear-gradient(135deg,#7c3aed,#6d28d9); }
+  .b-del { background:linear-gradient(135deg,#dc2626,#991b1b); }
+  .b-save { background:linear-gradient(135deg,#059669,#10b981); }
+  .lim { width:58px; padding:7px; text-align:center; margin-bottom:0; }
+  .banner { background:rgba(217,119,6,.15); border:1px solid rgba(217,119,6,.4); color:#fbbf24; border-radius:12px; padding:10px 14px; font-size:12px; margin-bottom:14px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+  .scroll { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .sq-note { font-size:10px; color:#64748b; margin-top:-6px; margin-bottom:8px; }
+  @media (max-width:560px) { th,td { padding:8px 4px; font-size:11px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🛡️ <span>Admin Panel</span></h1>
+    <div class="btns">
+      <button class="b-dash" onclick="location.href='/'">📊 My Dashboard</button>
+      <button class="b-out" onclick="location.href='/logout'">Logout</button>
+    </div>
+  </header>
+
+  <div id="viewBanner" style="display:none" class="banner">
+    <span id="viewText"></span>
+    <button class="b-dash mini" onclick="backToAdmin()">Back to Admin View</button>
+  </div>
+
+  <div class="card">
+    <h2>➕ Create New Panel User</h2>
+    <div class="row">
+      <div><label>Username</label><input id="nu_name" placeholder="rahul"></div>
+      <div><label>Password</label><input id="nu_pass" placeholder="strong password"></div>
+    </div>
+    <div class="row">
+      <div><label>Max Telegram Accounts</label><input id="nu_acc" type="number" value="5" min="0"></div>
+      <div><label>Max Target Groups (per account)</label><input id="nu_tar" type="number" value="3" min="0"></div>
+    </div>
+    <div class="row">
+      <div><label>🔒 Security Question (for forgot password)</label>
+        <select id="nu_q" onchange="if(this.value==='CUSTOM'){document.getElementById('nu_q_custom').style.display='block'}else{document.getElementById('nu_q_custom').style.display='none'}">
+          <option value="What was your first school's name?">What was your first school's name?</option>
+          <option value="What is your mother's name?">What is your mother's name?</option>
+          <option value="What is your favourite food?">What is your favourite food?</option>
+          <option value="What was your first pet's name?">What was your first pet's name?</option>
+          <option value="What city were you born in?">What city were you born in?</option>
+          <option value="CUSTOM">✏️ Custom Question...</option>
+        </select>
+      </div>
+      <div><label>🔑 Answer (user will type this to reset password)</label><input id="nu_a" placeholder="secret answer"></div>
+    </div>
+    <input id="nu_q_custom" placeholder="Type your custom question here" style="display:none">
+    <button class="b-add" onclick="createUser()">➕ CREATE USER</button>
+    <div class="msg" id="createMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>👥 Panel Users</h2>
+    <div class="scroll">
+      <table>
+        <thead><tr><th>User</th><th>Role</th><th>Status</th><th>Accounts</th><th>Max Acc</th><th>Max Targets</th><th>Actions</th></tr></thead>
+        <tbody id="userRows"></tbody>
+      </table>
+    </div>
+    <div class="msg" id="userMsg"></div>
+  </div>
+
+  <div class="card">
+    <h2>🔑 Change My (Admin) Password</h2>
+    <div class="row">
+      <div><label>Old Password</label><input id="op_pass" type="password"></div>
+      <div><label>New Password (min 6)</label><input id="np_pass" type="password"></div>
+    </div>
+    <button class="b-add" onclick="changePassword()">CHANGE PASSWORD</button>
+    <div class="msg" id="pwdMsg"></div>
+  </div>
+</div>
+<script>
+async function post(url, body) {
+  const r = await fetch(url, {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body||{})});
+  return {ok: r.ok, data: await r.json()};
+}
+function show(id, text, bad) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = 'msg' + (bad ? ' bad' : '');
+}
+async function loadUsers() {
+  const r = await fetch('/api/admin/users');
+  const j = await r.json();
+  const vb = document.getElementById('viewBanner');
+  if (j.view_as) {
+    vb.style.display = 'flex';
+    document.getElementById('viewText').textContent = '👁️ Currently viewing "' + j.view_as + '" dashboard';
+  } else { vb.style.display = 'none'; }
+  const tb = document.getElementById('userRows');
+  tb.innerHTML = '';
+  j.users.forEach(u => {
+    const tr = document.createElement('tr');
+    const isAdmin = u.role === 'admin';
+    tr.innerHTML =
+      '<td><b>' + u.username + '</b>' + (u.has_sq ? ' 🔒' : ' <span style="color:#fbbf24">⚠️</span>') + '</td>' +
+      '<td><span class="badge ' + (isAdmin ? 'bg-admin' : 'bg-user') + '">' + u.role.toUpperCase() + '</span></td>' +
+      '<td><span class="badge ' + (u.active ? 'bg-on' : 'bg-off') + '">' + (u.active ? 'ACTIVE' : 'DISABLED') + '</span></td>' +
+      '<td>' + u.accounts_count + ' (' + u.running_count + ' live)</td>' +
+      '<td><input class="lim" type="number" min="0" id="acc_' + u.username + '" value="' + u.max_accounts + '"' + (isAdmin ? ' disabled' : '') + '></td>' +
+      '<td><input class="lim" type="number" min="0" id="tar_' + u.username + '" value="' + u.max_targets + '"' + (isAdmin ? ' disabled' : '') + '></td>' +
+      '<td>' +
+        (!isAdmin ? '<button class="mini b-view" onclick="viewDash(\'' + u.username + '\')">View Dashboard</button>' : '') +
+        (!isAdmin ? '<button class="mini b-tog" onclick="toggleUser(\'' + u.username + '\',' + (!u.active) + ')">' + (u.active ? 'Disable' : 'Activate') + '</button>' : '') +
+        '<button class="mini b-reset" onclick="resetPwd(\'' + u.username + '\')">Reset Pass</button>' +
+        '<button class="mini b-save" onclick="editQA(\'' + u.username + '\')">Edit Q&A</button>' +
+        '<button class="mini b-save" onclick="saveLimits(\'' + u.username + '\')">Save Limits</button>' +
+        (!isAdmin ? '<button class="mini b-del" onclick="delUser(\'' + u.username + '\')">Delete</button>' : '') +
+      '</td>';
+    tb.appendChild(tr);
+  });
+}
+async function createUser() {
+  let q = document.getElementById('nu_q').value;
+  if (q === 'CUSTOM') q = document.getElementById('nu_q_custom').value.trim();
+  const j = await post('/api/admin/user/create', {
+    username: document.getElementById('nu_name').value,
+    password: document.getElementById('nu_pass').value,
+    max_accounts: document.getElementById('nu_acc').value,
+    max_targets: document.getElementById('nu_tar').value,
+    security_question: q,
+    security_answer: document.getElementById('nu_a').value
+  });
+  show('createMsg', j.data.msg, !j.ok);
+  if (j.ok) {
+    document.getElementById('nu_name').value = '';
+    document.getElementById('nu_pass').value = '';
+    document.getElementById('nu_a').value = '';
+    loadUsers();
+  }
+}
+async function toggleUser(uname, active) {
+  const j = await post('/api/admin/user/update', {username: uname, active: active});
+  show('userMsg', j.data.msg, !j.ok);
+  loadUsers();
+}
+async function resetPwd(uname) {
+  const p = prompt('New password for "' + uname + '":');
+  if (!p) return;
+  const j = await post('/api/admin/user/update', {username: uname, password: p});
+  show('userMsg', j.data.msg, !j.ok);
+}
+async function saveLimits(uname) {
+  const j = await post('/api/admin/user/update', {
+    username: uname,
+    max_accounts: document.getElementById('acc_' + uname).value,
+    max_targets: document.getElementById('tar_' + uname).value
+  });
+  show('userMsg', j.data.msg, !j.ok);
+}
+async function editSQ(uname, url, label) {
+  const v = prompt(url);
+  return v;
+}
+async function delUser(uname) {
+  if (!confirm('Delete "' + uname + '" and ALL their Telegram accounts?')) return;
+  const j = await post('/api/admin/user/delete', {username: uname});
+  show('userMsg', j.data.msg, !j.ok);
+  loadUsers();
+}
+async function viewDash(uname) {
+  const j = await post('/api/admin/view-as', {username: uname});
+  if (j.ok) location.href = '/';
+  else show('userMsg', j.data.msg, true);
+}
+async function backToAdmin() {
+  await post('/api/admin/view-as', {});
+  if (confirm('OK = Open My Dashboard (all accounts)\nCancel = Stay on Admin Panel')) location.href = '/';
+  else loadUsers();
+}
+async function changePassword() {
+  const j = await post('/api/admin/change-password', {
+    old_password: document.getElementById('op_pass').value,
+    new_password: document.getElementById('np_pass').value
+  });
+  show('pwdMsg', j.data.msg, !j.ok);
+  if (j.ok) { document.getElementById('op_pass').value = ''; document.getElementById('np_pass').value = ''; }
+}
+loadUsers();
+</script>
+</body>
+</html>
